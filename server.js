@@ -18,11 +18,13 @@ app.get('/', (req, res) => {
 
 app.post('/api/hello', (req, res) => {
   let apiUrl = 'https://www.goodreads.com/search/index.xml';
+  console.log(req.body.searchBy);
+  let searchByTerm = req.body.searchBy ? req.body.searchBy : 'all';
   axios.get(apiUrl, {
     params: {
       key: process.env.API_KEY,
       q: req.body.term,
-      searchField: 'author'
+      searchField: searchByTerm
     }
   })
     .then(data => {
