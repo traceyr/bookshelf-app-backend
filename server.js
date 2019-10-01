@@ -18,7 +18,6 @@ app.get('/', (req, res) => {
 
 app.post('/api/hello', (req, res) => {
   let apiUrl = 'https://www.goodreads.com/search/index.xml';
-  console.log(req.body.searchBy);
   let searchByTerm = req.body.searchBy ? req.body.searchBy : 'all';
   axios.get(apiUrl, {
     params: {
@@ -32,6 +31,27 @@ app.post('/api/hello', (req, res) => {
       res.send(jsonResults);
     })
     .catch(err => console.log(err));
+});
+
+app.post('/api/bookDetails', (req, res) => {
+  let apiUrl = 'https://www.goodreads.com/book/show';
+  console.log(req.body);
+  axios.get(apiUrl, {
+    params: {
+      key: process.env.API_KEY,
+      format: 'xml',
+      id: req.body.id
+    }
+  })
+  .then(results => {
+    let jsonResults = convert.xml2json(results.data, { compact: true, spaces: 2 });
+    res.send(jsonResults);
+  })
+  .catch(err => {
+    console.log(err.response);
+    console.log(err.message);
+    res.send(err.response);
+  })
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
