@@ -3,7 +3,9 @@ const bodyParser = require('body-parser');
 const axios = require('axios');
 const convert = require('xml-js');
 const cors = require('cors');
+const { getAllBooks, getOneBook } = require('./controllers/goodreadsControllers');
 require('dotenv').config();
+
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -12,46 +14,25 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 
-app.get('/', (req, res) => {
-  res.send('datatdslkfjdlskjkl');
+app.post('/api/bookSearch', async (req, res, next) => {
+  try {
+    console.log('here1')
+    let searchByTerm = req.body.searchBy ? req.body.searchBy : 'all';
+    let allBooks = await getAllBooks(searchByTerm, req.body.term);
+    res.send(allBooks);
+  } catch(e) {
+    console.log(e);
+  }
+
 });
 
-app.post('/api/hello', (req, res) => {
-  let apiUrl = 'https://www.goodreads.com/search/index.xml';
-  let searchByTerm = req.body.searchBy ? req.body.searchBy : 'all';
-  axios.get(apiUrl, {
-    params: {
-      key: process.env.API_KEY,
-      q: req.body.term,
-      searchField: searchByTerm
-    }
-  })
-    .then(data => {
-      let jsonResults = convert.xml2json(data.data, { compact: true, spaces: 2 });
-      res.send(jsonResults);
-    })
-    .catch(err => console.log(err));
-});
-
-app.post('/api/bookDetails', (req, res) => {
-  let apiUrl = 'https://www.goodreads.com/book/show';
-  console.log(req.body);
-  axios.get(apiUrl, {
-    params: {
-      key: process.env.API_KEY,
-      format: 'xml',
-      id: req.body.id
-    }
-  })
-  .then(results => {
-    let jsonResults = convert.xml2json(results.data, { compact: true, spaces: 2 });
-    res.send(jsonResults);
-  })
-  .catch(err => {
-    console.log(err.response);
-    console.log(err.message);
-    res.send(err.response);
-  })
+app.post('/api/book', async (req, res, next) => {
+  try {
+    let oneBook = await getOneBook(req.body.id)
+    res.send(oneBook);
+  } catch(e) {
+    console.log(e);
+  }
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
